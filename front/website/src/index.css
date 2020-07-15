@@ -1,0 +1,168 @@
+@font-face {
+  font-family: 'Montserrat';
+  font-style: normal;
+  font-weight: 400;
+  src: url('./fonts/Montserrat/Montserrat-ExtraLight.ttf')
+}
+
+body, #root{
+    min-width: 100vw;
+    min-height: 100vh;
+    font-family: "Montserrat", normal;
+}
+
+.sidebar {
+  font-family: "Montserrat", normal;
+  height: 100%;
+  width: 300px;
+  background-color: #fff;
+  position: fixed !important;
+  z-index: 1;
+  overflow: auto;
+  display: block;
+  padding: 8px 16px;
+  text-align: left;
+  border: none;
+  white-space: normal;
+  float: none;
+  outline: 0;
+  animation: from-left 1s;
+  top: 0;
+  border-right: 1px solid lightgray;
+}
+
+.sidebar-header {
+    font-family: inherit;
+    margin: 64px;
+    font-size: 24px;
+    text-align: center;
+}
+
+.sidebar-item {
+    font-family: inherit;
+    padding: 8px 16px;
+    float: left;
+    width: 100%;
+    border: none;
+    display: block;
+    outline: 0;
+    text-align: center;
+}
+
+.sidebar-sub-item {
+    font-size: 12px;
+}
+
+.sidebar-link {
+    color: #000 !important;
+}
+
+.overlay-item:hover > .menu-overlay {
+    width:100%;
+    height:100%;
+    background-color:#ccc;
+    opacity:0.5;
+    color:white;
+    cursor: pointer;
+    animation-name: overlay-animation;
+    animation-duration: 500ms;
+    z-index: 3;
+}
+
+.overlay-item:hover > .menu-overlay > .sidebar-link {
+    color:red !important;
+    font-weight: bold;
+}
+
+.overlay-item:hover > .menu-overlay > .sidebar-header {
+    color:red !important;
+    font-weight: bold;
+}
+
+@keyframes overlay-animation {
+    from {background-color: #fff; font-weight: normal}
+    to {background-color: #ccc; font-weight: bold}
+  }
+
+@keyframes from-left {
+  from {
+    left: -300px;
+    opacity: 0;
+  }
+  to {
+    left: 0;
+    opacity: 1;
+  }
+}
+
+.container-large-screen {
+    margin-left: 320px;
+    padding-top: 72px;
+    padding: 60px;
+}
+
+.container-small-screen {
+    min-height: 100%;
+    margin-top: 64px;
+    margin-left: 36px;
+    margin-right: 36px;
+}
+
+.menu-bar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    overflow: hidden;
+    justify-content: center;
+}
+
+.menu-bar-title {
+    font-family: inherit;
+    margin: 8px;
+    font-size: 24px;
+    display: inline-block;
+    height: 40px;
+    line-height: 1.5;
+}
+
+.menu-bar-button {
+    margin: 8px;
+    cursor: pointer;
+    width: 40px;
+    height: 40px;
+}
+
+.menu-bar-overlay {
+    opacity: 0.8;
+    background-color:#aaa;
+    width:100%;
+    height:100%;
+    animation-name: menu-overlay-animation;
+    animation-duration: 500ms;
+    min-height: 100vh;
+}
+
+.welcome {
+    padding: 40px;
+    text-align: center;
+    line-height: 2;
+}
+
+.welcome-header {
+    margin-bottom: 30px;
+}
+
+@keyframes menu-overlay-animation {
+    from {background-color:#fff;}
+    to {background-color:#aaa;}
+  }
+
+.logo {
+    background-color: black;
+}
+
+#instagram {
+    -webkit-text-stroke: 1px black;
+}

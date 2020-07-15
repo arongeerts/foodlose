@@ -1,0 +1,496 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Foodlose Serverless Application backend
+
+Parameters:
+  Env:
+    Type: String
+    Default: dev
+    AllowedValues:
+      - dev
+      - prod
+    Description: The environment.
+  TokenSecretParam:
+    Type: String
+    Description: The secret string to encrypt tokens
+    NoEcho: true
+
+# More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
+Globals:
+  Function:
+    Timeout: 15
+    Runtime: python3.7
+    Environment:
+      Variables:
+        FOODLOSE_ENV: !Ref Env
+  Api:
+    Name: FoodloseAPI
+    Cors:
+      AllowHeaders: "'*'"
+      AllowMethods: "'*'"
+      AllowOrigin: "'*'"
+    
+
+Resources:
+  ###############
+  #             #
+  #  IAM ROLES  #
+  #             #
+  ###############
+
+  # Service Lambda function
+  ServiceLambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+              - lambda.amazonaws.com
+            Action:
+              - 'sts:AssumeRole'
+      Path: /
+      Policies:
+        - PolicyName: 
+            Fn::Join: [-, [foodlose-lambda-dynamodb, !Ref Env]]
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action: 'dynamodb:*'
+                Resource: 
+                  - !GetAtt ProfilesTable.Arn
+                  - !GetAtt RecordsTable.Arn
+                  - !GetAtt PostsTable.Arn
+                  - Fn::Join:
+                      - '/'
+                      - [!GetAtt ProfilesTable.Arn, "index/Email"]
+        - PolicyName: 
+            Fn::Join: [-, [foodlose-lambda-sns, !Ref Env]]
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action: 'sns:Publish'
+                Resource: '*'
+        - PolicyName: 
+            Fn::Join: [-, [foodlose-lambda-secrets-manager, !Ref Env]]
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action: 
+                  - 'secretsmanager:DescribeSecret'
+                  - 'secretsmanager:List*'
+                Resource:
+                  - '*'
+              - Effect: Allow
+                Action: 'secretsmanager:*'
+                Resource: !Ref TokenSecret
+        - PolicyName:
+            Fn::Join: [-, [foodlose-lambda-s3, !Ref Env]]
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action: 
+                  - 's3:*'
+                Resource:
+                  - !GetAtt WebsiteBucket.Arn
+                  - Fn::Join: ['', [!GetAtt WebsiteBucket.Arn, '/*']]
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+
+  ###############################
+  #                             #
+  #  DYNAMODB TABLE DEFINITION  #
+  #                             #
+  ###############################
+
+  # Profiles table
+  ProfilesTable:
+    Type: AWS::DynamoDB::Table
+    Properties: 
+      AttributeDefinitions: 
+        - AttributeName: user_id
+          AttributeType: S
+        - AttributeName: email
+          AttributeType: S
+      BillingMode: PAY_PER_REQUEST
+      KeySchema: 
+        - AttributeName: user_id
+          KeyType: HASH
+      TableName: 
+        Fn::Join: [-, [foodlose-profiles, !Ref Env]]
+      GlobalSecondaryIndexes:
+        - IndexName: Email
+          KeySchema:
+            - AttributeName: email
+              KeyType: HASH
+          Projection:
+            ProjectionType: "ALL"
+      Tags: 
+        - Key: project
+          Value: 
+            Fn::Join: [-, [Foodlose, !Ref Env]]
+
+  # records table
+  RecordsTable:
+    Type: AWS::DynamoDB::Table
+    Properties: 
+      AttributeDefinitions: 
+        - AttributeName: user
+          AttributeType: S
+        - AttributeName: record_date
+          AttributeType: S
+      BillingMode: PAY_PER_REQUEST
+      KeySchema: 
+        - AttributeName: user
+          KeyType: HASH
+        - AttributeName: record_date
+          KeyType: RANGE
+      TableName: 
+        Fn::Join: [-, [foodlose-records, !Ref Env]]
+      Tags: 
+        - Key: project
+          Value: 
+            Fn::Join: [-, [Foodlose, !Ref Env]]
+  
+  # Posts table
+  PostsTable:
+    Type: AWS::DynamoDB::Table
+    Properties: 
+      AttributeDefinitions: 
+        - AttributeName: post_partition
+          AttributeType: S
+        - AttributeName: post_id
+          AttributeType: S
+      BillingMode: PAY_PER_REQUEST
+      KeySchema: 
+        - AttributeName: post_partition
+          KeyType: HASH
+        - AttributeName: post_id
+          KeyType: RANGE
+      TableName: 
+        Fn::Join: [-, [foodlose-posts, !Ref Env]]
+      Tags: 
+        - Key: project
+          Value: 
+            Fn::Join: [-, [Foodlose, !Ref Env]]
+
+  #############################
+  #                           #
+  #  TOKEN ENCRYPTION SECRET  #
+  #                           #
+  #############################
+
+  TokenSecret:
+    Type: AWS::SecretsManager::Secret
+    Properties: 
+      Description: The secret used for encrypting tokens
+      Name: 
+        Fn::Join: [-, [foodlose-secret, !Ref Env]]
+      SecretString: 
+        !Ref TokenSecretParam
+      Tags: 
+        - Key: project
+          Value: 
+            Fn::Join: [-, [Foodlose, !Ref Env]]
+
+  ################
+  #              #
+  #  SNS Topics  #
+  #              #
+  ################
+
+  ProfileCreatedTopic:
+    Type: AWS::SNS::Topic
+    Properties: 
+      TopicName: 
+        Fn::Join: [-, [FoodloseProfileCreated, !Ref Env]]
+  
+  RecordCreatedTopic:
+    Type: AWS::SNS::Topic
+    Properties: 
+      TopicName: 
+        Fn::Join: [-, [FoodloseRecordCreated, !Ref Env]]
+
+  PostCreatedTopic:
+    Type: AWS::SNS::Topic
+    Properties: 
+      TopicName: 
+        Fn::Join: [-, [FoodlosePostCreated, !Ref Env]]
+
+  GetPostTopic:
+    Type: AWS::SNS::Topic
+    Properties: 
+      TopicName: 
+        Fn::Join: [-, [FoodloseGetPost, !Ref Env]]
+
+  GetProfileTopic:
+    Type: AWS::SNS::Topic
+    Properties: 
+      TopicName: 
+        Fn::Join: [-, [FoodloseGetProfile, !Ref Env]]
+
+  GetRecrodsTopic:
+    Type: AWS::SNS::Topic
+    Properties: 
+      TopicName: 
+        Fn::Join: [-, [FoodloseGetRecords, !Ref Env]]
+
+  ContactTopic:
+    Type: AWS::SNS::Topic
+    Properties: 
+      TopicName: 
+        Fn::Join: [-, [FoodloseContact, !Ref Env]]
+
+  ######################
+  #                    #
+  #  LAMBDA FUNCTIONS  #
+  #                    #
+  ######################
+
+  # Login
+  LoginFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: user/
+      Handler: handler.auth.login.main
+      Role: !GetAtt ServiceLambdaRole.Arn
+      Events:
+        Login:
+          Type: Api
+          Properties:
+            Path: /login
+            Method: post
+  # Profile
+  CreateProfileFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: user/
+      Handler: handler.profile.create_profile.main
+      Role: !GetAtt ServiceLambdaRole.Arn
+      Events:
+        Login:
+          Type: Api
+          Properties:
+            Path: /user
+            Method: post
+
+  DeleteProfileFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: user/
+      Handler: handler.profile.delete_profile.main
+      Role: !GetAtt ServiceLambdaRole.Arn
+      Events:
+        Login:
+          Type: Api
+          Properties:
+            Path: /user/{user_id}
+            Method: delete
+
+  UpdateProfileFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: user/
+      Handler: handler.profile.update_profile.main
+      Role: !GetAtt ServiceLambdaRole.Arn
+      Events:
+        Login:
+          Type: Api
+          Properties:
+            Path: /user/{user_id}
+            Method: put
+
+  GetProfileFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: user/
+      Handler: handler.profile.get_profile.main
+      Role: !GetAtt ServiceLambdaRole.Arn
+      Events:
+        Login:
+          Type: Api
+          Properties:
+            Path: /user/{user_id}
+            Method: get
+
+  ListProfilesFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: user/
+      Handler: handler.profile.list_profiles.main
+      Role: !GetAtt ServiceLambdaRole.Arn
+      Events:
+        Login:
+          Type: Api
+          Properties:
+            Path: /user
+            Method: get
+
+  # Record
+  CreateRecordFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: user/
+      Handler: handler.record.create_record.main
+      Role: !GetAtt ServiceLambdaRole.Arn
+      Events:
+        Login:
+          Type: Api
+          Properties:
+            Path: /user/{user_id}/record
+            Method: post
+
+  DeleteRecordFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: user/
+      Handler: handler.record.delete_record.main
+      Role: !GetAtt ServiceLambdaRole.Arn
+      Events:
+        Login:
+          Type: Api
+          Properties:
+            Path: /user/{user_id}/record/{record_id}
+            Method: delete
+
+  GetRecordFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: user/
+      Handler: handler.record.get_record.main
+      Role: !GetAtt ServiceLambdaRole.Arn
+      Events:
+        Login:
+          Type: Api
+          Properties:
+            Path: /user/{user_id}/record/{record_id}
+            Method: get
+
+  ListRecordsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: user/
+      Handler: handler.record.list_records.main
+      Role: !GetAtt ServiceLambdaRole.Arn
+      Events:
+        Login:
+          Type: Api
+          Properties:
+            Path: /user/{user_id}/record
+            Method: get
+
+  # Post
+  CreatePostFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: user/
+      Handler: handler.post.create_post.main
+      Role: !GetAtt ServiceLambdaRole.Arn
+      Events:
+        Login:
+          Type: Api
+          Properties:
+            Path: /post
+            Method: post
+
+  DeletePostFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: user/
+      Handler: handler.post.delete_post.main
+      Role: !GetAtt ServiceLambdaRole.Arn
+      Events:
+        Login:
+          Type: Api
+          Properties:
+            Path: /post/{post_id}
+            Method: delete
+
+  GetPostFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: user/
+      Handler: handler.post.get_post.main
+      Role: !GetAtt ServiceLambdaRole.Arn
+      Events:
+        Login:
+          Type: Api
+          Properties:
+            Path: /post/{post_id}
+            Method: get
+
+  ListPostsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: user/
+      Handler: handler.post.list_posts.main
+      Role: !GetAtt ServiceLambdaRole.Arn
+      Events:
+        Login:
+          Type: Api
+          Properties:
+            Path: /post
+            Method: get
+
+  UpdatePostFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: user/
+      Handler: handler.post.update_post.main
+      Role: !GetAtt ServiceLambdaRole.Arn
+      Events:
+        Login:
+          Type: Api
+          Properties:
+            Path: /post
+            Method: put
+
+  # Contact
+  ContactFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: user/
+      Handler: handler.contact.contact.main
+      Role: !GetAtt ServiceLambdaRole.Arn
+      Events:
+        Login:
+          Type: Api
+          Properties:
+            Path: /contact
+            Method: post
+
+  ####################
+  #                  #
+  #  Website bucket  #
+  #                  #
+  ####################
+  
+  WebsiteBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      AccessControl: PublicRead
+      BucketName:
+        Fn::Join: [-, [foodlose-site, !Ref Env]]
+      MetricsConfigurations: 
+        - Id: EntireBucket
+      WebsiteConfiguration:
+        IndexDocument: index.html
+        ErrorDocument: error.html
+    DeletionPolicy: Retain
+
+Outputs:
+  FoodloseAPI:
+    Description: "API Gateway endpoint URL for Prod stage of Foodlose "
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/"
+  StackName:
+    Description: The name of the stack 
+    Value: !Sub "${AWS::StackName}"
+  WebUrl:
+    Description: The URL of the static website (if deployed)
+    Value: !Join ['', ['https://', !GetAtt [WebsiteBucket, DomainName]]]

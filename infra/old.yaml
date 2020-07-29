@@ -1,0 +1,620 @@
+############################
+  #                          #
+  #  API GATEWAY DEFINITION  #
+  #                          #
+  ############################
+
+  # API Gateway
+  FoodloseAPI:
+    Type: AWS::ApiGateway::RestApi
+    Properties: 
+      Name: 
+        Fn::Join: [-, [FoodloseAPI, !Ref Env]]
+      Tags: 
+        - Key: project
+          Value: 
+            Fn::Join: [-, [Foodlose, !Ref Env]]
+
+  # API Stage
+  APIStage:
+    Type: AWS::ApiGateway::Stage
+    Properties:
+      StageName: dummy
+      RestApiId: !Ref FoodloseAPI
+      DeploymentId: !Ref APIDeployment
+      MethodSettings:
+        - HttpMethod: "*"
+          ResourcePath: /~1profiles
+
+  # API Deployment
+  APIDeployment:
+    Type: AWS::ApiGateway::Deployment
+    Properties:
+      RestApiId: !Ref FoodloseAPI
+      StageName: v1
+    DependsOn: 
+      - GetProfilesMethod
+      - GetProfilesEmailMethod
+      - PostProfilesMethod
+      - PutProfilesEmailMethod
+      - DeleteProfilesEmailMethod
+      - GetRecordsRecordDateMethod
+      - GetRecordsMethod
+      - DeleteRecordsRecordDateMethod
+      - PostRecordsMethod
+
+  # API role
+  ApiGatewayIamRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: 
+        Fn::Join: [-, [foodlose-api-role, !Ref Env]]
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Principal:
+              Service:
+                - "apigateway.amazonaws.com"
+            Action:
+              - "sts:AssumeRole"
+      Path: "/"
+      Policies:
+        - PolicyName: 
+            Fn::Join: [-, [foodlose-access-lambda, !Ref Env]]
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: "Allow"
+                Action: "lambda:*"
+                Resource: "*"
+
+  # Resource: /profiles
+  ProfilesAPIResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      ParentId: !GetAtt FoodloseAPI.RootResourceId
+      PathPart: "profiles"
+      RestApiId: !Ref FoodloseAPI
+
+  ProfilesOptions:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      AuthorizationType: NONE
+      RestApiId:
+        Ref: FoodloseAPI
+      ResourceId:
+        Ref: ProfilesAPIResource
+      HttpMethod: OPTIONS
+      Integration:
+        IntegrationResponses:
+        - StatusCode: 200
+          ResponseParameters:
+            method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+            method.response.header.Access-Control-Allow-Methods: "'*'"
+            method.response.header.Access-Control-Allow-Origin: "'*'"
+          ResponseTemplates:
+            application/json: ''
+        PassthroughBehavior: WHEN_NO_MATCH
+        RequestTemplates:
+          application/json: '{"statusCode": 200}'
+        Type: MOCK
+      MethodResponses:
+      - StatusCode: 200
+        ResponseModels:
+          application/json: 'Empty'
+        ResponseParameters:
+            method.response.header.Access-Control-Allow-Headers: false
+            method.response.header.Access-Control-Allow-Methods: false
+            method.response.header.Access-Control-Allow-Origin: false
+
+  # Resource: /profiles/{email}
+  ProfilesEmailAPIResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      ParentId: !Ref ProfilesAPIResource
+      PathPart: "{email}"
+      RestApiId: !Ref FoodloseAPI
+
+  # Resource: /profiles/{email}/records
+  RecordsAPIResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      ParentId: !Ref ProfilesEmailAPIResource
+      PathPart: "records"
+      RestApiId: !Ref FoodloseAPI
+
+  # Resource: /profiles/{email}/records/{record_date}
+  RecordsRecordDateAPIResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      ParentId: !Ref RecordsAPIResource
+      PathPart: "{record_date}"
+      RestApiId: !Ref FoodloseAPI
+
+  # GET /profiles
+  GetProfilesMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      ApiKeyRequired: false
+      AuthorizationType: NONE
+      HttpMethod: GET
+      Integration:
+        ConnectionType: INTERNET
+        Credentials: !GetAtt ApiGatewayIamRole.Arn
+        IntegrationHttpMethod: POST
+        PassthroughBehavior: WHEN_NO_MATCH
+        TimeoutInMillis: 29000
+        Type: AWS_PROXY
+        Uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ListProfilesLambda.Arn}/invocations"
+      OperationName: ListProfiles
+      ResourceId: !Ref ProfilesAPIResource
+      RestApiId: !Ref FoodloseAPI
+
+
+  # POST /profiles
+  PostProfilesMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      ApiKeyRequired: false
+      AuthorizationType: NONE
+      HttpMethod: POST
+      Integration:
+        ConnectionType: INTERNET
+        Credentials: !GetAtt ApiGatewayIamRole.Arn
+        IntegrationHttpMethod: POST
+        PassthroughBehavior: WHEN_NO_MATCH
+        TimeoutInMillis: 29000
+        Type: AWS_PROXY
+        Uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${CreateProfileLambda.Arn}/invocations"
+      OperationName: ListProfiles
+      ResourceId: !Ref ProfilesAPIResource
+      RestApiId: !Ref FoodloseAPI
+
+  # GET /profiles/{email}
+  GetProfilesEmailMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      ApiKeyRequired: false
+      AuthorizationType: NONE
+      HttpMethod: GET
+      Integration:
+        ConnectionType: INTERNET
+        Credentials: !GetAtt ApiGatewayIamRole.Arn
+        IntegrationHttpMethod: POST
+        PassthroughBehavior: WHEN_NO_MATCH
+        TimeoutInMillis: 29000
+        Type: AWS_PROXY
+        Uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${GetProfileLambda.Arn}/invocations"
+      OperationName: GetProfile
+      ResourceId: !Ref ProfilesEmailAPIResource
+      RestApiId: !Ref FoodloseAPI
+
+  # PUT /profiles/{email}
+  PutProfilesEmailMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      ApiKeyRequired: false
+      AuthorizationType: NONE
+      HttpMethod: PUT
+      Integration:
+        ConnectionType: INTERNET
+        Credentials: !GetAtt ApiGatewayIamRole.Arn
+        IntegrationHttpMethod: POST
+        PassthroughBehavior: WHEN_NO_MATCH
+        TimeoutInMillis: 29000
+        Type: AWS_PROXY
+        Uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${UpdateProfileLambda.Arn}/invocations"
+      OperationName: UpdateProfile
+      ResourceId: !Ref ProfilesEmailAPIResource
+      RestApiId: !Ref FoodloseAPI
+
+  # DELETE /profiles/{email}
+  DeleteProfilesEmailMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      ApiKeyRequired: false
+      AuthorizationType: NONE
+      HttpMethod: DELETE
+      Integration:
+        ConnectionType: INTERNET
+        Credentials: !GetAtt ApiGatewayIamRole.Arn
+        IntegrationHttpMethod: POST
+        PassthroughBehavior: WHEN_NO_MATCH
+        TimeoutInMillis: 29000
+        Type: AWS_PROXY
+        Uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${DeleteProfileLambda.Arn}/invocations"
+      OperationName: DeleteProfile
+      ResourceId: !Ref ProfilesEmailAPIResource
+      RestApiId: !Ref FoodloseAPI
+
+  # GET /profiles/{email}/records
+  GetRecordsMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      ApiKeyRequired: false
+      AuthorizationType: NONE
+      HttpMethod: GET
+      Integration:
+        ConnectionType: INTERNET
+        Credentials: !GetAtt ApiGatewayIamRole.Arn
+        IntegrationHttpMethod: POST
+        PassthroughBehavior: WHEN_NO_MATCH
+        TimeoutInMillis: 29000
+        Type: AWS_PROXY
+        Uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${GetRecordsLambda.Arn}/invocations"
+      OperationName: GetRecords
+      ResourceId: !Ref RecordsAPIResource
+      RestApiId: !Ref FoodloseAPI
+
+  # POST /profiles/{email}/records
+  PostRecordsMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      ApiKeyRequired: false
+      AuthorizationType: NONE
+      HttpMethod: POST
+      Integration:
+        ConnectionType: INTERNET
+        Credentials: !GetAtt ApiGatewayIamRole.Arn
+        IntegrationHttpMethod: POST
+        PassthroughBehavior: WHEN_NO_MATCH
+        TimeoutInMillis: 29000
+        Type: AWS_PROXY
+        Uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${CreateRecordLambda.Arn}/invocations"
+      OperationName: GetRecords
+      ResourceId: !Ref RecordsAPIResource
+      RestApiId: !Ref FoodloseAPI
+
+  # GET /profiles/{email}/records/{record_date}
+  GetRecordsRecordDateMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      ApiKeyRequired: false
+      AuthorizationType: NONE
+      HttpMethod: GET
+      Integration:
+        ConnectionType: INTERNET
+        Credentials: !GetAtt ApiGatewayIamRole.Arn
+        IntegrationHttpMethod: POST
+        PassthroughBehavior: WHEN_NO_MATCH
+        TimeoutInMillis: 29000
+        Type: AWS_PROXY
+        Uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${GetRecordLambda.Arn}/invocations"
+      OperationName: GetRecords
+      ResourceId: !Ref RecordsRecordDateAPIResource
+      RestApiId: !Ref FoodloseAPI
+
+  # DELETE /profiles/{email}/records/{record_date}
+  DeleteRecordsRecordDateMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      ApiKeyRequired: false
+      AuthorizationType: NONE
+      HttpMethod: DELETE
+      Integration:
+        ConnectionType: INTERNET
+        Credentials: !GetAtt ApiGatewayIamRole.Arn
+        IntegrationHttpMethod: POST
+        PassthroughBehavior: WHEN_NO_MATCH
+        TimeoutInMillis: 29000
+        Type: AWS_PROXY
+        Uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${DeleteRecordLambda.Arn}/invocations"
+      OperationName: DeleteRecords
+      ResourceId: !Ref RecordsRecordDateAPIResource
+      RestApiId: !Ref FoodloseAPI
+
+
+  ######################
+  #                    #
+  #  LAMBDA FUNCTIONS  #
+  #                    #
+  ######################
+
+  # IAM Role
+  LambdaIamRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName:
+        Fn::Join: [-, [foodlose-lambda-role, !Ref Env]]
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Principal:
+              Service:
+                - "lambda.amazonaws.com"
+            Action:
+              - "sts:AssumeRole"
+      Policies:
+        - PolicyName: 
+            Fn::Join: [-, [foodlose-lambda-dyanmodb-policy, !Ref Env]]
+          PolicyDocument: 
+            Version: "2012-10-17"
+            Statement:
+              - Effect: "Allow"
+                Action:
+                  - "dynamodb:*"
+                Resource:
+                  - !GetAtt ProfilesTable.Arn
+                  - !GetAtt RecordsTable.Arn
+        - PolicyName: 
+            Fn::Join: [-, [foodlose-lambda-log-policy, !Ref Env]]
+          PolicyDocument: 
+            Version: "2012-10-17"
+            Statement:
+              - Effect: "Allow"
+                Action:
+                  - "logs:*"
+                Resource: "*"
+        - PolicyName: 
+            Fn::Join: [-, [foodlose-lambda-secrets-policy, !Ref Env]]
+          PolicyDocument: 
+            Version: "2012-10-17"
+            Statement:
+              - Effect: "Allow"
+                Action:
+                  - "secretsmanager:GetSecretValue"
+                Resource: !Ref AdminPasswordSecret
+      Path: "/"
+
+  # List profiles
+  ListProfilesLambda:
+    Type: AWS::Lambda::Function
+    Properties:
+      Code:
+        S3Bucket: 
+          Fn::Join: [-, [foodlose-deployment-bucket, !Ref Env]]
+        S3Key: "lambdaFunction.zip"
+      Description: Get foodlose profiles
+      FunctionName: 
+        Fn::Join: [-, [foodlose-list-profiles, !Ref Env]]
+      Handler: profile.list_profiles.main
+      MemorySize: 256
+      Role: !GetAtt LambdaIamRole.Arn
+      Runtime: python3.7
+      Timeout: 60
+      Environment:
+        Variables:
+          FOODLOSE_ENV: !Ref Env
+
+  # Invocation Permission
+  InvokeListProfilesPermission:
+    Type: AWS::Lambda::Permission
+    Properties: 
+      Action: lambda:InvokeFunction
+      FunctionName: 
+        !Ref ListProfilesLambda
+      Principal: apigateway.amazonaws.com
+
+  # Create profile
+  CreateProfileLambda:
+    Type: AWS::Lambda::Function
+    Properties:
+      Code:
+        S3Bucket: 
+          Fn::Join: [-, [foodlose-deployment-bucket, !Ref Env]]
+        S3Key: "lambdaFunction.zip"
+      Description: Create foodlose profile
+      FunctionName: 
+        Fn::Join: [-, [foodlose-create-profile, !Ref Env]]
+      Handler: profile.create_profile.main
+      MemorySize: 256
+      Role: !GetAtt LambdaIamRole.Arn
+      Runtime: python3.7
+      Timeout: 60
+      Environment:
+        Variables:
+          FOODLOSE_ENV: !Ref Env
+
+  # Invocation Permission
+  InvokeCreateProfilePermission:
+    Type: AWS::Lambda::Permission
+    Properties: 
+      Action: lambda:InvokeFunction
+      FunctionName: 
+        !Ref CreateProfileLambda
+      Principal: apigateway.amazonaws.com
+
+  # Get profile
+  GetProfileLambda:
+    Type: AWS::Lambda::Function
+    Properties:
+      Code:
+        S3Bucket: 
+          Fn::Join: [-, [foodlose-deployment-bucket, !Ref Env]]
+        S3Key: "lambdaFunction.zip"
+      Description: Get foodlose profile
+      FunctionName: 
+        Fn::Join: [-, [foodlose-get-profile, !Ref Env]]
+      Handler: profile.get_profile.main
+      MemorySize: 256
+      Role: !GetAtt LambdaIamRole.Arn
+      Runtime: python3.7
+      Timeout: 60
+      Environment:
+        Variables:
+          FOODLOSE_ENV: !Ref Env
+
+  # Invocation Permission
+  InvokeGetProfilePermission:
+    Type: AWS::Lambda::Permission
+    Properties: 
+      Action: lambda:InvokeFunction
+      FunctionName: 
+        !Ref GetProfileLambda
+      Principal: apigateway.amazonaws.com
+
+  # Update profile
+  UpdateProfileLambda:
+    Type: AWS::Lambda::Function
+    Properties:
+      Code:
+        S3Bucket: 
+          Fn::Join: [-, [foodlose-deployment-bucket, !Ref Env]]
+        S3Key: "lambdaFunction.zip"
+      Description: Update foodlose profile
+      FunctionName: 
+        Fn::Join: [-, [foodlose-update-profile, !Ref Env]]
+      Handler: profile.update_profile.main
+      MemorySize: 256
+      Role: !GetAtt LambdaIamRole.Arn
+      Runtime: python3.7
+      Timeout: 60
+      Environment:
+        Variables:
+          FOODLOSE_ENV: !Ref Env
+
+  # Invocation Permission
+  InvokeUpdateProfilePermission:
+    Type: AWS::Lambda::Permission
+    Properties: 
+      Action: lambda:InvokeFunction
+      FunctionName: 
+        !Ref UpdateProfileLambda
+      Principal: apigateway.amazonaws.com
+
+  # Delete profile
+  DeleteProfileLambda:
+    Type: AWS::Lambda::Function
+    Properties:
+      Code:
+        S3Bucket: 
+          Fn::Join: [-, [foodlose-deployment-bucket, !Ref Env]]
+        S3Key: "lambdaFunction.zip"
+      Description: Delete foodlose profile
+      FunctionName: 
+        Fn::Join: [-, [foodlose-delete-profile, !Ref Env]]
+      Handler: profile.delete_profile.main
+      MemorySize: 256
+      Role: !GetAtt LambdaIamRole.Arn
+      Runtime: python3.7
+      Timeout: 60
+      Environment:
+        Variables:
+          FOODLOSE_ENV: !Ref Env
+
+  # Invocation Permission
+  InvokeDeleteProfilePermission:
+    Type: AWS::Lambda::Permission
+    Properties: 
+      Action: lambda:InvokeFunction
+      FunctionName: 
+        !Ref DeleteProfileLambda
+      Principal: apigateway.amazonaws.com
+
+  # Get records
+  GetRecordsLambda:
+    Type: AWS::Lambda::Function
+    Properties:
+      Code:
+        S3Bucket: 
+          Fn::Join: [-, [foodlose-deployment-bucket, !Ref Env]]
+        S3Key: "lambdaFunction.zip"
+      Description: Get records of a user
+      FunctionName: 
+        Fn::Join: [-, [foodlose-get-records, !Ref Env]]
+      Handler: record.get_records.main
+      MemorySize: 256
+      Role: !GetAtt LambdaIamRole.Arn
+      Runtime: python3.7
+      Timeout: 60
+      Environment:
+        Variables:
+          FOODLOSE_ENV: !Ref Env
+
+  # Invocation Permission
+  InvokeGetRecordsPermission:
+    Type: AWS::Lambda::Permission
+    Properties: 
+      Action: lambda:InvokeFunction
+      FunctionName: 
+        !Ref GetRecordsLambda
+      Principal: apigateway.amazonaws.com
+
+  # Create record
+  CreateRecordLambda:
+    Type: AWS::Lambda::Function
+    Properties:
+      Code:
+        S3Bucket: 
+          Fn::Join: [-, [foodlose-deployment-bucket, !Ref Env]]
+        S3Key: "lambdaFunction.zip"
+      Description: Create record for a user
+      FunctionName: 
+        Fn::Join: [-, [foodlose-create-record, !Ref Env]]
+      Handler: record.create_record.main
+      MemorySize: 256
+      Role: !GetAtt LambdaIamRole.Arn
+      Runtime: python3.7
+      Timeout: 60
+      Environment:
+        Variables:
+          FOODLOSE_ENV: !Ref Env
+
+  # Invocation Permission
+  InvokeCreateRecordPermission:
+    Type: AWS::Lambda::Permission
+    Properties: 
+      Action: lambda:InvokeFunction
+      FunctionName: 
+        !Ref CreateRecordLambda
+      Principal: apigateway.amazonaws.com
+
+  # Get record
+  GetRecordLambda:
+    Type: AWS::Lambda::Function
+    Properties:
+      Code:
+        S3Bucket: 
+          Fn::Join: [-, [foodlose-deployment-bucket, !Ref Env]]
+        S3Key: "lambdaFunction.zip"
+      Description: Get the record of a user on a given date
+      FunctionName: 
+        Fn::Join: [-, [foodlose-get-record, !Ref Env]]
+      Handler: record.get_record.main
+      MemorySize: 256
+      Role: !GetAtt LambdaIamRole.Arn
+      Runtime: python3.7
+      Timeout: 60
+      Environment:
+        Variables:
+          FOODLOSE_ENV: !Ref Env
+
+  # Invocation Permission
+  InvokeGetRecordPermission:
+    Type: AWS::Lambda::Permission
+    Properties: 
+      Action: lambda:InvokeFunction
+      FunctionName: 
+        !Ref GetRecordLambda
+      Principal: apigateway.amazonaws.com
+
+  # Delete record
+  DeleteRecordLambda:
+    Type: AWS::Lambda::Function
+    Properties:
+      Code:
+        S3Bucket: 
+          Fn::Join: [-, [foodlose-deployment-bucket, !Ref Env]]
+        S3Key: "lambdaFunction.zip"
+      Description: Delete the records of a user
+      FunctionName: 
+        Fn::Join: [-, [foodlose-delete-record, !Ref Env]]
+      Handler: record.delete_record.main
+      MemorySize: 256
+      Role: !GetAtt LambdaIamRole.Arn
+      Runtime: python3.7
+      Timeout: 60
+      Environment:
+        Variables:
+          FOODLOSE_ENV: !Ref Env
+
+  # Invocation Permission
+  InvokeDeleteRecordPermission:
+    Type: AWS::Lambda::Permission
+    Properties: 
+      Action: lambda:InvokeFunction
+      FunctionName: 
+        !Ref DeleteRecordLambda
+      Principal: apigateway.amazonaws.com

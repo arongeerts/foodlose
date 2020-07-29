@@ -1,0 +1,33 @@
+
+
+.card-title {
+    color: black;
+    text-align: center;
+    font-family: "Montserrat", normal;
+}
+
+a:-webkit-any-link {
+    text-decoration: none !important;
+}
+
+.gallery-item {
+    min-width: 300px;
+    max-width: 300px;
+    margin-bottom: 24px !important;
+}
+
+
+.gallery-item:hover > .gallery-overlay {
+    width:100%;
+    height:100%;
+    background-color:#ccc;
+    opacity:0.3;
+    cursor: pointer;
+    animation-name: card-overlay-animation;
+    animation-duration: 300ms;
+}
+
+@keyframes card-overlay-animation {
+    from {background-color: #fff;}
+    to {background-color: #ccc;}
+  }

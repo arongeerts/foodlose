@@ -1,0 +1,64 @@
+.tab-content {
+    padding: 20px;
+}
+
+/* Create post */
+
+.post-name-input {
+    width: 100%;
+    padding: 5px;
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+.post-text-input {
+    width: 100%;
+    margin-bottom: 10px;
+}
+
+.ql-editor {
+    min-height: 500px;
+}
+
+.preview-container {
+    border-color: lightgrey;
+    border-style: solid;
+    border-width: 1px;
+    height: 100%;
+    padding: 20px;
+    margin-top: 10px;
+}
+
+.post-button {
+    background-color: lightgrey;
+    color: black;
+    width: 100%;
+}
+
+.tag-row {
+    margin-top: 10px;
+    margin-bottom: 10px;
+    display: flex;
+    justify-content: space-evenly;
+}
+
+.tag {
+    cursor: pointer;
+    padding: 5px;
+    padding-left: 10px;
+    padding-right: 10px;
+    border-radius: 3px;
+}
+.tag.selected {
+    background-color: red;
+    color: white;
+    font-weight: bold;
+}
+
+.tag.unselected {
+    color: red;
+    background-color: white;
+    border-width: 1px;
+    border-style: solid;
+    border-color: red;
+}

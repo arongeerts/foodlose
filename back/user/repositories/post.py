@@ -88,9 +88,10 @@ class PostRepository:
             "timestamp": {"S": post.timestamp},
             "img_url": {"S": post.img_url},
             "name": {"S": post.name},
-            "text": {"S": post.text},
-            "tags": {"SS": post.tags}
+            "text": {"S": post.text}
         }
+        if post.tags:
+            dynamo_item["tags"] = {"SS": post.tags}
         self.dynamo.put_item(table=self.posts_table_name, item=dynamo_item)
 
     @staticmethod
@@ -101,5 +102,5 @@ class PostRepository:
             post_id=item["post_id"]["S"],
             timestamp=item["timestamp"]["S"],
             img_url=item["img_url"]["S"],
-            tags=item["tags"]["SS"]
+            tags=item.get("tags", {}).get("SS")
         )

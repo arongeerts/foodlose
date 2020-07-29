@@ -7,7 +7,6 @@ import Welcome from '../components/Welcome'
 export default class Home extends React.Component {
     constructor(props) {
         super(props);
-        console.log("init home")
         this.resize = this.resize.bind(this)
     }
     state = { selectedItem: 'Tickets' };

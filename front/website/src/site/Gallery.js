@@ -31,7 +31,7 @@ export default class Gallery extends React.Component {
   load() {
     this.setState({...this.state, loading: true})
     client.getPosts(null, this.props.category || null)
-      .then(data => { console.log(data); this.setState({ ...this.state, items: data, loading: false }) })
+      .then(data => { this.setState({ ...this.state, items: data, loading: false }) })
   }
 
   render() {

@@ -10,10 +10,9 @@ const dev = {
 
 const prod = {
     name: 'prod',
-    url: 'https://lz0g8kc36l.execute-api.eu-west-1.amazonaws.com/Prod'
+    url: 'https://utijddwg18.execute-api.eu-west-1.amazonaws.com/Prod'
 }
 
 const config = window.location.origin.includes('//localhost:3000') ? local : (window.location.origin.includes('//localhost:3001') ? dev : prod)
 
 export default config
-console.log(config.name)

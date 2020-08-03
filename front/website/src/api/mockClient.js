@@ -200,7 +200,7 @@ export default class MockClient {
             setTimeout(() => {
                 resolve({
                     name: "Chocomousse met Kikkererwten",
-                    imgUrl: "https://foodlose-images.s3.eu-west-2.amazonaws.com/choco_mousse.jpeg",
+                    img_url: "https://foodlose-images.s3.eu-west-2.amazonaws.com/choco_mousse.jpeg",
                     tags: ["sweet"],
                     text: "<p>Deze overheerlijke chocomousse kan je maken met deze ingredienten:</p><p><br></p><ul><li>Kikkererwten</li><li>Chocolade</li><li>Boter</li></ul><p><br></p><p>Mix de ingredienten en zet in de koelkast.</p><p><br></p><p><strong>Smakelijk</strong>!</p>"
                 })

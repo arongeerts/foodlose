@@ -65,23 +65,17 @@ export default class CreatePost extends React.Component {
             img.crossOrigin = 'Anonymous'
 
             img.addEventListener('load', function () {
-                console.log('loaded')
                 canvas.height = this.height;
                 canvas.width = this.width;
                 ctx.drawImage(this, 0, 0);
                 data = canvas.toDataURL(imagetype);
                 callback(data);
             }, false)
-            
-            console.log(url);
-            console.log(img.onLoad)
+
             img.src = url;
-            console.log(img)
         };
 
         var upload = function(name, text, tags, img_data) {
-
-            console.log('post!')
             return client.createPost(name, text, tags, img_data)
                 
         }
@@ -92,7 +86,6 @@ export default class CreatePost extends React.Component {
     }
 
     handleSuccessfulUpload(response) {
-        console.log(response);
         this.setState({ ...this.state, waiting: false })
         this.setState({ ...this.initialState, message: "Opgeslagen" });
     }
@@ -105,8 +98,6 @@ export default class CreatePost extends React.Component {
 
     handleImageChange(event) {
         this.setState({ ...this.state, image: URL.createObjectURL(event.target.files[0])})
-
-        console.log(this.state.image)
     }
 
     handleImageDelete(f) {

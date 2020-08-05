@@ -4,11 +4,8 @@ import Chart from "react-apexcharts";
 
 export function Graph(props) {
     if (!props.records) {
-        console.log("true")
         return <div/>
     } else {
-        console.log("false")
-        console.log(props.records)
     }
 
     var records = props.records;

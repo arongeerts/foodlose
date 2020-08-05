@@ -15,7 +15,6 @@ export default class Dashboard extends React.Component {
 
     
   render() {
-
     return <Tabs defaultActiveKey="createPost" id="dashboardPanels">
         <Tab eventKey="createPost" title="Posts">
             <CreatePost />

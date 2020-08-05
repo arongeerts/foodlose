@@ -24,12 +24,23 @@ Globals:
       Variables:
         FOODLOSE_ENV: !Ref Env
   Api:
-    Name: FoodloseAPI
+    Name: 
+      Fn::Join: ["-", [FoodloseAPI, !Ref Env]]
     Cors:
       AllowHeaders: "'*'"
       AllowMethods: "'*'"
       AllowOrigin: "'*'"
-    
+    MethodSettings:
+      - HttpMethod: '*'
+        DataTraceEnabled: true
+        MetricsEnabled: true
+        ResourcePath: '/*'
+        LoggingLevel: INFO
+      - HttpMethod: '*'
+        DataTraceEnabled: true
+        MetricsEnabled: true
+        ResourcePath: '/'
+        LoggingLevel: INFO
 
 Resources:
   ###############
@@ -102,6 +113,25 @@ Resources:
                   - Fn::Join: ['', [!GetAtt WebsiteBucket.Arn, '/*']]
       ManagedPolicyArns:
         - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+
+  APIGatewayRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: 
+        Fn::Join: ["-", ["APIGatewayRole", !Ref Env]]
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+              - apigateway.amazonaws.com
+            Action:
+              - 'sts:AssumeRole'
+      Path: /
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/CloudWatchLogsFullAccess
+        - arn:aws:iam::aws:policy/service-role/AmazonAPIGatewayPushToCloudWatchLogs
 
   ###############################
   #                             #
@@ -257,6 +287,8 @@ Resources:
   LoginFunction:
     Type: AWS::Serverless::Function
     Properties:
+      FunctionName: 
+        Fn::Join: ["-", [foodlose-login, !Ref Env]]
       CodeUri: user/
       Handler: handler.auth.login.main
       Role: !GetAtt ServiceLambdaRole.Arn
@@ -270,6 +302,8 @@ Resources:
   CreateProfileFunction:
     Type: AWS::Serverless::Function
     Properties:
+      FunctionName: 
+        Fn::Join: ["-", [foodlose-create-profile, !Ref Env]]      
       CodeUri: user/
       Handler: handler.profile.create_profile.main
       Role: !GetAtt ServiceLambdaRole.Arn
@@ -283,6 +317,8 @@ Resources:
   DeleteProfileFunction:
     Type: AWS::Serverless::Function
     Properties:
+      FunctionName: 
+        Fn::Join: ["-", [foodlose-delete-profile, !Ref Env]]      
       CodeUri: user/
       Handler: handler.profile.delete_profile.main
       Role: !GetAtt ServiceLambdaRole.Arn
@@ -296,6 +332,8 @@ Resources:
   UpdateProfileFunction:
     Type: AWS::Serverless::Function
     Properties:
+      FunctionName: 
+        Fn::Join: ["-", [foodlose-update-profile, !Ref Env]]      
       CodeUri: user/
       Handler: handler.profile.update_profile.main
       Role: !GetAtt ServiceLambdaRole.Arn
@@ -309,6 +347,8 @@ Resources:
   GetProfileFunction:
     Type: AWS::Serverless::Function
     Properties:
+      FunctionName: 
+        Fn::Join: ["-", [foodlose-get-profile, !Ref Env]]      
       CodeUri: user/
       Handler: handler.profile.get_profile.main
       Role: !GetAtt ServiceLambdaRole.Arn
@@ -322,6 +362,8 @@ Resources:
   ListProfilesFunction:
     Type: AWS::Serverless::Function
     Properties:
+      FunctionName: 
+        Fn::Join: ["-", [foodlose-list-profiles, !Ref Env]]      
       CodeUri: user/
       Handler: handler.profile.list_profiles.main
       Role: !GetAtt ServiceLambdaRole.Arn
@@ -336,6 +378,8 @@ Resources:
   CreateRecordFunction:
     Type: AWS::Serverless::Function
     Properties:
+      FunctionName: 
+        Fn::Join: ["-", [foodlose-create-record, !Ref Env]]      
       CodeUri: user/
       Handler: handler.record.create_record.main
       Role: !GetAtt ServiceLambdaRole.Arn
@@ -349,6 +393,8 @@ Resources:
   DeleteRecordFunction:
     Type: AWS::Serverless::Function
     Properties:
+      FunctionName: 
+        Fn::Join: ["-", [foodlose-delete-record, !Ref Env]]      
       CodeUri: user/
       Handler: handler.record.delete_record.main
       Role: !GetAtt ServiceLambdaRole.Arn
@@ -361,7 +407,9 @@ Resources:
 
   GetRecordFunction:
     Type: AWS::Serverless::Function
-    Properties:
+    Properties: 
+      FunctionName: 
+        Fn::Join: ["-", [foodlose-get-record, !Ref Env]]      
       CodeUri: user/
       Handler: handler.record.get_record.main
       Role: !GetAtt ServiceLambdaRole.Arn
@@ -375,6 +423,8 @@ Resources:
   ListRecordsFunction:
     Type: AWS::Serverless::Function
     Properties:
+      FunctionName: 
+        Fn::Join: ["-", [foodlose-list-records, !Ref Env]]      
       CodeUri: user/
       Handler: handler.record.list_records.main
       Role: !GetAtt ServiceLambdaRole.Arn
@@ -389,6 +439,8 @@ Resources:
   CreatePostFunction:
     Type: AWS::Serverless::Function
     Properties:
+      FunctionName: 
+        Fn::Join: ["-", [foodlose-create-post, !Ref Env]]      
       CodeUri: user/
       Handler: handler.post.create_post.main
       Role: !GetAtt ServiceLambdaRole.Arn
@@ -402,6 +454,8 @@ Resources:
   DeletePostFunction:
     Type: AWS::Serverless::Function
     Properties:
+      FunctionName: 
+        Fn::Join: ["-", [foodlose-delete-post, !Ref Env]]      
       CodeUri: user/
       Handler: handler.post.delete_post.main
       Role: !GetAtt ServiceLambdaRole.Arn
@@ -415,6 +469,8 @@ Resources:
   GetPostFunction:
     Type: AWS::Serverless::Function
     Properties:
+      FunctionName: 
+        Fn::Join: ["-", [foodlose-get-post, !Ref Env]]      
       CodeUri: user/
       Handler: handler.post.get_post.main
       Role: !GetAtt ServiceLambdaRole.Arn
@@ -428,6 +484,8 @@ Resources:
   ListPostsFunction:
     Type: AWS::Serverless::Function
     Properties:
+      FunctionName: 
+        Fn::Join: ["-", [foodlose-list-posts, !Ref Env]]      
       CodeUri: user/
       Handler: handler.post.list_posts.main
       Role: !GetAtt ServiceLambdaRole.Arn
@@ -441,6 +499,8 @@ Resources:
   UpdatePostFunction:
     Type: AWS::Serverless::Function
     Properties:
+      FunctionName: 
+        Fn::Join: ["-", [foodlose-update-post, !Ref Env]]      
       CodeUri: user/
       Handler: handler.post.update_post.main
       Role: !GetAtt ServiceLambdaRole.Arn
@@ -455,6 +515,8 @@ Resources:
   ContactFunction:
     Type: AWS::Serverless::Function
     Properties:
+      FunctionName: 
+        Fn::Join: ["-", [foodlose-contact, !Ref Env]]      
       CodeUri: user/
       Handler: handler.contact.contact.main
       Role: !GetAtt ServiceLambdaRole.Arn
@@ -483,6 +545,17 @@ Resources:
         IndexDocument: index.html
         ErrorDocument: error.html
     DeletionPolicy: Retain
+
+  #################
+  #               #
+  #  API Gateway  #
+  #               #
+  #################
+
+  APIAccount:
+    Type: AWS::ApiGateway::Account
+    Properties: 
+      CloudWatchRoleArn: !GetAtt APIGatewayRole.Arn
 
 Outputs:
   FoodloseAPI:

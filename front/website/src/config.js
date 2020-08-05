@@ -5,7 +5,7 @@ const local = {
 
 const dev = {
     name: 'dev',
-    url: 'https://lz0g8kc36l.execute-api.eu-west-1.amazonaws.com/Prod'
+    url: 'https://zp80khwwa2.execute-api.eu-west-1.amazonaws.com/Prod'
 }
 
 const prod = {
@@ -13,6 +13,6 @@ const prod = {
     url: 'https://utijddwg18.execute-api.eu-west-1.amazonaws.com/Prod'
 }
 
-const config = window.location.origin.includes('//localhost:3000') ? local : (window.location.origin.includes('//localhost:3001') ? dev : prod)
+const config = window.location.origin.includes('//localhost:3000') ? local : (window.location.origin.includes('foodlose-site-dev') ? dev : prod)
 
 export default config

@@ -41,7 +41,6 @@ export default class UserInfo extends React.Component {
     }
 
     render() {
-        console.log(this.state)
         return <div>
             <Autocomplete
                 id="userSearch"

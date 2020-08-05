@@ -40,7 +40,6 @@ export default function Contact(props) {
 //     }
 
 //     handleMessageResponse(data) {
-//         console.log(data)
 //         this.setState({...this.state, resultMessage: data.response, resultMessageColor: data.color})
 //     }
 //     render() {

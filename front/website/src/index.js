@@ -1,17 +1,17 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
-import LoginView from './login/LoginView';
-import DashboardView from './dashboard/DashboardView';
-import Home from './site/Home';
-import About from './site/About';
-import Header from './site/Header';
-import Posts from './site/Posts';
-import Contact from './site/Contact';
-import Recipes from './site/Recipes';
+import LoginView from './views/login/LoginView';
+import AdminDashboard from './views/dashboard/AdminDashboard/AdminDashboard';
+import Home from './views/site/Home';
+import About from './views/site/About';
+import Header from './views/site/Header';
+import Posts from './views/site/Posts';
+import Contact from './views/site/Contact';
+import Recipes from './views/site/Recipes';
 import { setGlobalHeader } from './util/http';
 import * as serviceWorker from './serviceWorker';
-import { Route, Switch, Redirect, HashRouter as Router } from 'react-router-dom'
+import { Route, Redirect, HashRouter as Router } from 'react-router-dom'
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 const token = localStorage.getItem('token') || ''
@@ -36,7 +36,7 @@ ReactDOM.render(
           return (loggedIn ?  <Redirect to="/admin/dashboard" /> : <Redirect to="/admin/login" />)}
       }/>
       <Route path="/admin/login" component={LoginView} />
-      <Route path="/admin/dashboard" component={DashboardView} />
+      <Route path="/admin/dashboard" component={AdminDashboard} />
 
 
     {/* </Switch> */}

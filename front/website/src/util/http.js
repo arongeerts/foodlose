@@ -11,6 +11,9 @@ function processError(r, contentType) {
         return r.json().then(res => {
             const error = new Error(res ? res.detail : r.status)
             error.status = r.status
+            if (error.status == 401 || error.status == 403) {
+                window.location.href = window.location.origin + "/#/login"
+            }
             throw error
         })
     }

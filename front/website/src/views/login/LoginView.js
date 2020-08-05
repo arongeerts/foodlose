@@ -13,6 +13,7 @@ import { makeStyles } from '@material-ui/core/styles';
 import client from "../../api/client"
 import { useHistory } from 'react-router-dom';
 import Spinner from '../../components/Spinner/Spinner';
+import { updateLoginState } from '../../util/login';
 
 function Copyright() {
   return (
@@ -76,15 +77,14 @@ export default function SignInSide() {
     event.preventDefault();
     setWaiting(true)
     if (! waiting) {
-      client.login(email, password).then((data) => handleSuccessfulAuth(data.token)).catch((data) => handleFailedAuth(data))
+      client.login(email, password).then((data) => handleSuccessfulAuth(data)).catch((data) => handleFailedAuth(data))
     }
   }
 
-  function handleSuccessfulAuth(token) {
+  function handleSuccessfulAuth(data) {
     setError('')
     setWaiting(false)
-    localStorage.setItem('token', token)
-    history.push('/admin/dashboard')
+    history.push('/dashboard')
   }
 
   function handleFailedAuth(data) {

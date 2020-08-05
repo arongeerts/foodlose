@@ -1,12 +1,22 @@
+import {updateLoginState} from "../util/login";
+
 export default class MockClient {
-        login(email, password) {
+    processLogin(login_response) {
+        if (login_response.token) {
+            localStorage.setItem("token", login_response.token)
+            updateLoginState()
+        }
+        return login_response
+    }
+
+    login(email, password) {
         return new Promise((resolve, reject) => {
             setTimeout(() => {
                 resolve(
-                    { token: "my_admin_token" }
+                    { token: "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjoiMjAyMDA4MDUwOTQyMjU3NzA3ODUiLCJleHAiOjE1OTY3MDc1MjIsInJvbGUiOiJBRE1JTiJ9.6kgbwv53XCyrPcl7W1fYrBS4uwGgnr6MXfLL9UOZgT0" }
                 );
             }, 250);
-        });
+        }).then(this.processLogin);
     }
 
     getUsers() {

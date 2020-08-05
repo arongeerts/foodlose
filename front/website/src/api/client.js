@@ -1,34 +1,18 @@
-import http, { setGlobalHeader } from "../util/http";
+import http from "../util/http";
 import config from '../config';
 import MockClient from "./mockClient";
+import {updateLoginState, loginState} from "../util/login";
 
 export class Client {
     constructor(props) {
-        this.user_id = null;
-        this.token = null;
-        this.login = this.login.bind(this)
         this.processLogin = this.processLogin.bind(this)
     }
     
     processLogin(login_response) {
         if (login_response.token) {
-            this.token = login_response.token;
-
-            var base64Url = this.token.split('.')[1];
-            var base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-            var jsonPayload = decodeURIComponent(atob(base64).split('').map(function (c) {
-                return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-            }).join(''));
-
-            var decoded = JSON.parse(jsonPayload);
-            if (decoded.user_id) {
-                this.user_id = decoded.user_id;
-            }
-
-            setGlobalHeader('Authorization', this.token)
-            localStorage.setItem('token', this.token)
+            localStorage.setItem("token", login_response.token)
+            updateLoginState()
         }
-
         return login_response
     }
 
@@ -45,18 +29,18 @@ export class Client {
         return http.get(config.url + '/user')
     }
 
-    async getUserInfo(user_id) {
-        if (! user_id) {
-            user_id = this.user_id;
+    async getUserInfo(userId) {
+        if (! userId) {
+            userId = loginState.useId;
         }
-        return http.get(config.url) + '/user/' + user_id
+        return http.get(config.url) + '/user/' + userId
     }
 
-    async getUserRecords(user_id) {
-        if (!user_id) {
-            user_id = this.user_id;
+    async getUserRecords(userId) {
+        if (!userId) {
+            userId = loginState.userId;
         }
-        return http.get(config.url) + '/user/' + user_id + '/record'
+        return http.get(config.url) + '/user/' + userId + '/record'
     }
 
     async createProfile(profile) {

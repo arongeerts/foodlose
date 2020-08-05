@@ -42,5 +42,10 @@ aws s3 sync build/ s3://foodlose-site-prod/ --acl public-read
 sam build
 
 # Run deployment
-sam deploy --stack-name prod --parameter-overrides 'Env=dev TokenSecretParam=my-super-secret' --s3-bucket foodlose-deployment-bucket --capabilites CAPABILITY_NAMED_IAM
+sam deploy --stack-name dev --parameter-overrides 'Env=dev TokenSecretParam=my-super-secret' --s3-bucket foodlose-deployment-bucket-dev --capabilities CAPABILITY_NAMED_IAM
+
+# Set an initial admin user
+export FOODLOSE_URL=https://api-gateway-url/Prod
+export FOODLOSE_SECRET=SUPERSECRET # The TokenSecretParam
+python create_admin_user.py --email myemail@example.com --password my-secret-password
 ```

@@ -24,15 +24,9 @@
     border-color: lightgrey;
     border-style: solid;
     border-width: 1px;
-    height: 100%;
+    min-height: 593px;
     padding: 20px;
-    margin-top: 10px;
-}
-
-.post-button {
-    background-color: lightgrey;
-    color: black;
-    width: 100%;
+    margin-top: 18px;
 }
 
 .tag-row {

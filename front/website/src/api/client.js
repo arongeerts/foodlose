@@ -31,7 +31,7 @@ export class Client {
 
     async getUserInfo(userId) {
         if (! userId) {
-            userId = loginState.useId;
+            userId = loginState.userId;
         }
         return http.get(config.url) + '/user/' + userId
     }
@@ -58,6 +58,20 @@ export class Client {
                 text: text,
                 tags: tags,
                 img_data: image
+            }
+        )
+    }
+
+    async uploadPost(post_id, name, text, tags, image, timestamp) {
+        return http.put(
+            config.url + '/post',
+            {
+                post_id: post_id,
+                name: name,
+                text: text,
+                tags: tags,
+                img_data: image,
+                timestamp: timestamp
             }
         )
     }

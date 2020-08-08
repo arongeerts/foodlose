@@ -13,7 +13,7 @@ export default class MockClient {
         return new Promise((resolve, reject) => {
             setTimeout(() => {
                 resolve(
-                    { token: "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjoiMjAyMDA4MDUwOTQyMjU3NzA3ODUiLCJleHAiOjE1OTY3MDc1MjIsInJvbGUiOiJBRE1JTiJ9.6kgbwv53XCyrPcl7W1fYrBS4uwGgnr6MXfLL9UOZgT0" }
+                    { token: "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjoiMjAyMDA4MDUwOTQyMjU3NzA3ODUiLCJleHAiOjE3NzY3MDc1MjIsInJvbGUiOiJBRE1JTiJ9.lbchU4veTaBpMenHfkwyxe8hiRtV8gkln9DxMgThiZk" }
                 );
             }, 250);
         }).then(this.processLogin);
@@ -146,6 +146,16 @@ export default class MockClient {
         });
     }
 
+    uploadPost(content, images, timestamp) {
+        return new Promise((resolve, reject) => {
+            setTimeout(() => {
+                resolve(
+                    { response: "ok" }
+                );
+            }, 250);
+        });
+    }
+
     getPosts(offset, category) {
         return new Promise((resolve, reject) => {
             setTimeout(() => {
@@ -212,7 +222,8 @@ export default class MockClient {
                     name: "Chocomousse met Kikkererwten",
                     img_url: "https://foodlose-images.s3.eu-west-2.amazonaws.com/choco_mousse.jpeg",
                     tags: ["sweet"],
-                    text: "<p>Deze overheerlijke chocomousse kan je maken met deze ingredienten:</p><p><br></p><ul><li>Kikkererwten</li><li>Chocolade</li><li>Boter</li></ul><p><br></p><p>Mix de ingredienten en zet in de koelkast.</p><p><br></p><p><strong>Smakelijk</strong>!</p>"
+                    text: "<p>Deze overheerlijke chocomousse kan je maken met deze ingredienten:</p><p><br></p><ul><li>Kikkererwten</li><li>Chocolade</li><li>Boter</li></ul><p><br></p><p>Mix de ingredienten en zet in de koelkast.</p><p><br></p><p><strong>Smakelijk</strong>!</p>",
+                    timestamp: "2020-01-01 00:00:00"
                 })
             }, 1000);
         });

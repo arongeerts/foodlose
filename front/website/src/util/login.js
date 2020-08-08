@@ -20,12 +20,15 @@ export function updateLoginState() {
         var decoded = JSON.parse(jsonPayload);
         if (decoded.user_id && decoded.role && decoded.exp) {
             // Check if token is still valid
+            console.log("Valid token")
             if (Date.now() <= decoded.exp * 1000) {
                 loginState.userId = decoded.user_id;
                 loginState.role = decoded.role;
                 loginState.token = token
                 loginState.loggedIn = true
                 setGlobalHeader('Authorization', token)
+            } else {
+                console.log("Token was expired, redirecting to login...")
             }
         }
     }
@@ -37,4 +40,5 @@ export function logout() {
     loginState.role = "";
     loginState.loggedIn = false;
     setGlobalHeader('Authorization', '')
+    window.location.href = window.location.origin + "/#/login"
 }

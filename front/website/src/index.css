@@ -9,6 +9,7 @@ body, #root{
     min-width: 100vw;
     min-height: 100vh;
     font-family: "Montserrat", normal;
+    background-color: white;
 }
 
 .sidebar {

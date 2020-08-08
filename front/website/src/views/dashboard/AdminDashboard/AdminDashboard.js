@@ -9,21 +9,42 @@ import DashboardSideBar from '../../../components/Dashboard/DashboardSideBar';
 import SidebarItem from '../../../components/Dashboard/SideBarItem';
 import { faEdit, faUser, faChartLine, faSignOutAlt, faFileMedical } from '@fortawesome/free-solid-svg-icons'
 import DashboardContainer from '../../../components/Dashboard/DashboardContainer';
-
+import ConfirmModal from '../../../components/Modal/ConfirmModal';
 
 export default class Dashboard extends React.Component {
   constructor(props) {
       super(props);
       this.state = {
-          selected: "createPost"
+        selected: "createPost",
+        modal: {
+          show: false,
+          title: "",
+          confirm: () => {},
+          cancel: () => {}
+        }
       }
 
       this.select = this.select.bind(this);
+      this.clickLogout = this.clickLogout.bind(this);
+      this.resetModal = this.resetModal.bind(this);
   };
 
   select(newKey) {
-      console.log("select")
       this.setState({...this.state, selected: newKey})
+  }
+
+  resetModal() {
+      this.setState({
+          ...this.state, modal: {
+              show: false,
+              title: "",
+              confirm: () => {},
+              cancel: () => {}
+          }})
+  }
+
+  clickLogout() {
+      this.setState({...this.state, modal: {show: true, title: "Uitloggen", confirm: logout, cancel: this.resetModal}})
   }
 
   render() {
@@ -48,13 +69,14 @@ export default class Dashboard extends React.Component {
                 <SidebarItem itemKey="userInfo" icon={faChartLine} onSelect={this.select}>
                     <div>Gebruikers voortgang</div>
                 </SidebarItem>
-                <SidebarItem itemKey="logout" icon={faSignOutAlt} onSelect={logout}>
+                <SidebarItem itemKey="logout" icon={faSignOutAlt} onSelect={this.clickLogout}>
                     <div>Uitloggen</div>
                 </SidebarItem>
             </DashboardSideBar>
             <DashboardContainer>
                 {mappings[this.state.selected]}
             </ DashboardContainer>
+            <ConfirmModal {...this.state.modal} text="Weet je zeker dat je wilt uitloggen?"/>
         </div >
 
     )

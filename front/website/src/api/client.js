@@ -94,6 +94,10 @@ export class Client {
     async getPostDetails(id) {
         return http.get(config.url + '/post/' + id)
     }
+
+    async deletePost(id) {
+        return http.delete(config.url + '/post/' + id)
+    }
 }
 
 const apiClient = window.location.origin.includes('//localhost:3000') ? new MockClient() : new Client()

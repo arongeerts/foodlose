@@ -6,7 +6,7 @@ const style = {
 }
 
 export default function CustomButton(props) {
-    return <Button variant={props.variant || "outline-dark"} className="post-button" onClick={props.onClick} style={style}>
+    return <Button {...props} style={{...style, ...props.style}} variant={props.variant || "outline-dark"} className="post-button" onClick={props.onClick} >
         <label style={{margin: 0, cursor: "pointer", padding: "5px"}}>
         {props.label}
         {props.children}

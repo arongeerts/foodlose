@@ -4,7 +4,7 @@ import Button from "../Button/Button"
 
 
 export default function MyModal(props) {
-    return <Modal show={props.show} onHide={props.cancel}>
+    return <Modal show={props.show} onHide={props.cancel} centered={true}>
         <Modal.Header closeButton>
             <Modal.Title>{props.title}</Modal.Title>
         </Modal.Header>

@@ -219,6 +219,7 @@ export default class MockClient {
         return new Promise((resolve, reject) => {
             setTimeout(() => {
                 resolve({
+                    post_id: id,
                     name: "Chocomousse met Kikkererwten",
                     img_url: "https://foodlose-images.s3.eu-west-2.amazonaws.com/choco_mousse.jpeg",
                     tags: ["sweet"],
@@ -226,6 +227,16 @@ export default class MockClient {
                     timestamp: "2020-01-01 00:00:00"
                 })
             }, 1000);
+        });
+    }
+
+    deletePost(id) {
+        return new Promise((resolve, reject) => {
+            setTimeout(() => {
+                resolve(
+                    { response: "ok" }
+                );
+            }, 250);
         });
     }
 }

@@ -1,7 +1,6 @@
 import React from 'react';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
-import Container from 'react-bootstrap/Container';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 import PostItem from './PostItem';
@@ -86,30 +85,28 @@ export default class EditPostItem extends React.Component {
         ]
 
         return (
-            <Container style={{ marginLeft: '0', marginRight: '0', width: '100%', maxWidth: '100vw' }}>
+            <>
+            <Col lg={6}>
+                <h1>{this.props.title}</h1>
+                <input placeholder="Naam" className="post-name-input" type="text" value={this.props.post.name} onChange={this.handleNameChange} />
+                <ReactQuill className="post-text-input" theme="snow" value={this.props.post.text} onChange={this.handleChange} />
+                <TagRow tags={tags} onClick={this.onTagClick} activeTags={this.props.post.tags} />
                 <Row>
                     <Col sm={6}>
-                        <h1>{this.props.title}</h1>
-                        <input placeholder="Naam" className="post-name-input" type="text" value={this.props.post.name} onChange={this.handleNameChange} />
-                        <ReactQuill className="post-text-input" theme="snow" value={this.props.post.text} onChange={this.handleChange} />
-                        <TagRow tags={tags} onClick={this.onTagClick} activeTags={this.props.post.tags} />
-                        <Row>
-                            <Col sm={6}>
-                                <FileUpload className="post-button" onChange={this.handleImageChange} />
-                            </Col>
-                            <Col sm={6}>
-                                <Button label="Opslaan" onClick={this.props.onSave}/>
-                            </Col>
-                        </Row>
+                        <FileUpload className="post-button" onChange={this.handleImageChange} />
                     </Col>
                     <Col sm={6}>
-                        <h1>Preview</h1>
-                        <div className="preview-container">
-                            <PostItem name={this.props.post.name} text={this.props.post.text} imgUrl={this.props.post.image || this.props.post.img_url} />
-                        </div>
+                        <Button label="Opslaan" onClick={this.props.onSave}/>
                     </Col>
                 </Row>
-            </Container>
+            </Col>
+            <Col lg={6}>
+                <h1>Preview</h1>
+                <div className="preview-container">
+                    <PostItem name={this.props.post.name} text={this.props.post.text} imgUrl={this.props.post.image || this.props.post.img_url} />
+                </div>
+            </Col>
+            </>
         )
     }
 }

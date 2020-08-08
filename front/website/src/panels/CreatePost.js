@@ -77,7 +77,6 @@ export default class CreatePost extends React.Component {
     }
 
     handleSuccessfulUpload(response) {
-        console.log("success")
         this.setState({ ...this.state, waiting: false })
         this.setState({ ...this.initialState, message: "Opgeslagen", post: {name: "", text: "", tags: [], image: ""}});
     }
@@ -93,8 +92,12 @@ export default class CreatePost extends React.Component {
         return (
             <Container style={{ padding: "20px", width: '100%', maxWidth: '100vw' }}>
                 <Row>
-                    <Col sm={12}><Spinner show={this.state.waiting} size="lg" /></Col>
+                    <Col sm={12} ><Spinner show={this.state.waiting} size="lg" /></Col>
+                </Row>
+                <Row>
                     <div style={{ color: this.state.messageColor }}>{this.state.message}</div>
+                </Row>
+                <Row>
                     <EditPostItem title="Nieuwe post" post={this.state.post} setPost={this.setPost}onSave={() => this.savePost(this.upload)}/>
                 </Row>
             </Container>

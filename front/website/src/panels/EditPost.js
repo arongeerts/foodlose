@@ -5,9 +5,14 @@ import Container from 'react-bootstrap/Container';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 import Spinner from '../components/Spinner/Spinner';
+import Button from '../components/Button/Button';
+import ConfirmModal from '../components/Modal/ConfirmModal';
 import EditPostItem from '../components/PostItem/EditPostItem';
 import TextField from '@material-ui/core/TextField';
 import Autocomplete from '@material-ui/lab/Autocomplete';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faTrashAlt } from '@fortawesome/free-solid-svg-icons';
+
 
 
 
@@ -28,7 +33,11 @@ export default class CreatePost extends React.Component {
             messageColor: "green",
             waiting: false,
             post: emptyPost,
-            postList: []
+            postList: [],
+            modal: {
+                show: false,
+                title: "Delete post?"
+            }
         };
 
         this.state = this.initialState;
@@ -39,6 +48,18 @@ export default class CreatePost extends React.Component {
         this.setPost = this.setPost.bind(this);
         this.handleSearchChange = this.handleSearchChange.bind(this);
         this.loadPosts = this.loadPosts.bind(this);
+        this.clickDeletePost = this.clickDeletePost.bind(this);
+        this.resetModal = this.resetModal.bind(this);
+        this.deletePost = this.deletePost.bind(this);
+    }
+
+    resetModal() {
+        this.setState({
+            ...this.state, modal: {
+                ...this.state.modal,
+                show: false
+            }
+        })
     }
 
     savePost(upload) {
@@ -73,7 +94,7 @@ export default class CreatePost extends React.Component {
             this.state.post.tags,
             img_data,
             this.state.post.timestamp)
-            .then(this.handleSuccessfulUpload)
+            .then(() => this.handleSuccessfulUpload("Opgeslagen"))
             .catch(this.handleFailedUpload)
 
         if (this.state.post.image) {
@@ -83,13 +104,34 @@ export default class CreatePost extends React.Component {
         }
     }
 
+    clickDeletePost() {
+        if (this.state.post.post_id) {
+            this.setState({ ...this.state, modal: { ...this.state.modal, show: true, text: "Weet je zeker dat je \"" + this.state.post.name + "\" wil verwijderen" } })
+        } else {
+            this.setState({...this.state, message: "Selecteer een post om te verwijderen", messageColor: "red"})
+        }
+    }
+
     componentDidMount() {
         this.loadPosts()
     }
 
+    deletePost() {
+        const post_id = this.state.post.post_id
+        this.setState({...this.state, waiting: true})
+        client.deletePost(post_id)
+            .then(() => this.setState({ ...this.state, messageColor: "green", message: "Post verwijderd" }))
+            .then(() => this.resetModal())
+            .then(() => this.handleSuccessfulUpload("Post Verwijderd"))
+            .catch(response => {
+                console.error(response);
+                this.setState({ ...this.state, messageColor: "red", message: "Kon post niet verwijderen, probeer het later opnieuw" })
+            })
+    }
+
     loadPosts() {
         client.getPosts()
-            .then(data => this.setState({ ...this.state, postList: data, messageColor: "green", message: "" }))
+            .then(data => this.setState({ ...this.state, postList: data}))
             .catch(response => {
                 console.error(response);
                 this.setState({ ...this.state, messageColor: "red", message: "Kon posts niet ophalen, probeer het later opnieuw" })
@@ -97,11 +139,13 @@ export default class CreatePost extends React.Component {
     }
 
     handleSearchChange(event, newValue) {
-        this.setState({...this.state, waiting: true})
-        if (newValue.post_id) {
-            client.getPostDetails(newValue.post_id)
-                .then(data => this.setState({ ...this.state, waiting: false, post: data }))
-                .catch(response => console.error(response))
+        if (newValue) {
+            this.setState({ ...this.state, waiting: true })
+            if (newValue.post_id) {
+                client.getPostDetails(newValue.post_id)
+                    .then(data => this.setState({ ...this.state, waiting: false, post: data }))
+                    .catch(response => console.error(response))
+            }
         }
     }
 
@@ -109,9 +153,12 @@ export default class CreatePost extends React.Component {
         this.setState({ ...this.state, post: post })
     }
 
-    handleSuccessfulUpload(response) {
+    handleSuccessfulUpload(message) {
         this.setState({ ...this.state, waiting: false })
-        this.setState({ ...this.initialState, postList: this.state.postList, message: "Opgeslagen", post: { name: "", text: "", tags: [], image: "" } });
+        this.setState({ ...this.initialState, 
+            postList: this.state.postList, 
+            message: message, 
+            post: { name: "", text: "", tags: [], image: "" } });
         this.loadPosts()
     }
 
@@ -125,27 +172,35 @@ export default class CreatePost extends React.Component {
     render() {
         return (
             <Container style={{ padding: "20px", width: '100%', maxWidth: '100vw' }}>
-                <Col>
                 <Row>
+                    <Col sm={11}>
                     <Autocomplete
                         id="postSearch"
                         value={this.state.post}
                         onChange={this.handleSearchChange}
                         options={this.state.postList}
                         getOptionLabel={(p) => p.name}
-                        style={{ width: "100%", marginLeft: "30px", marginRight: "30px", marginBottom: "10px" }}
+                        style={{marginBottom: "20px"}}
                         renderInput={(params) => <TextField {...params} label="Post:" variant="outlined" />}
                     />
+                    </Col>
+                    <Col sm={1}>
+                        <Button style={{float: "right", width: "56px", height: "56px", borderColor: "lightgrey"}}
+                                onClick={this.clickDeletePost}>
+                            <FontAwesomeIcon icon={faTrashAlt} size="lg" />
+                        </Button>
+                    </Col>
                 </Row>
                 <Row>
-                    <Col sm={12}><Spinner show={this.state.waiting} size="lg" /></Col>
-                    <div style={{ color: this.state.messageColor }}>{this.state.message}</div>
-                    
+                    <Col sm={12} ><Spinner show={this.state.waiting} size="lg" /></Col>
                 </Row>
-                </Col>
-                <Col>
+                <Row>
+                    <div style={{ color: this.state.messageColor }}>{this.state.message}</div>
+                </Row>
+                <Row>
                     <EditPostItem title="Post bewerken" post={this.state.post} setPost={this.setPost} onSave={() => this.savePost(this.upload)} />
-                </Col>
+                </Row>
+                <ConfirmModal {...this.state.modal} confirm={this.deletePost} cancel={this.resetModal}/>
             </Container>
         )
     }

@@ -7,6 +7,7 @@ The following features are supported
 * Admin can create new posts without having to write code
 * Posts are visible on web page
 * Admin can create user profiles
+* Google analytics support
 
 ## Architecture
 * Frontend

@@ -2,6 +2,7 @@ import http from "../util/http";
 import config from '../config';
 import MockClient from "./mockClient";
 import {updateLoginState, loginState} from "../util/login";
+import ReactGA from "react-ga"
 
 export class Client {
     constructor(props) {
@@ -77,6 +78,13 @@ export class Client {
     }
 
     async getPosts(offset, category) {
+        if (category) {
+            ReactGA.event({
+                action: 'List Recipes',
+                category: category
+            });
+        }
+
         return http.get(config.url + '/post?last_post_id=' + offset).then(items => category ? items.filter(item => item.tags.includes(category)) : items);
     }
 
@@ -92,6 +100,10 @@ export class Client {
     }
 
     async getPostDetails(id) {
+        ReactGA.event({
+            action: 'Get Recipe',
+            category: id
+        })
         return http.get(config.url + '/post/' + id)
     }
 

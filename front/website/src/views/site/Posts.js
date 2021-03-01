@@ -2,7 +2,7 @@ import React from 'react';
 import PostItem from '../../components/PostItem/PostItem'
 import client from '../../api/client';
 import Spinner from '../../components/Spinner/Spinner';
-
+import ReactGA from "react-ga";
 
 
 export default class Posts extends React.Component {
@@ -19,6 +19,10 @@ export default class Posts extends React.Component {
     componentDidMount() {
         client.getPostDetails(this.props.match.params.postid)
             .then(data => this.setState({...this.state, loading: false, post_info: data}))
+            .then(() => ReactGA.event({
+                action: 'Get Recipe',
+                category: this.state.post_info.name
+            }))
             .catch(err => console.log(err))
     }
 

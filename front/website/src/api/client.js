@@ -100,10 +100,6 @@ export class Client {
     }
 
     async getPostDetails(id) {
-        ReactGA.event({
-            action: 'Get Recipe',
-            category: id
-        })
         return http.get(config.url + '/post/' + id)
     }
 

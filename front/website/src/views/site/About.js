@@ -1,7 +1,10 @@
 import React from "react";
 import image from "../../resources/img/about.jpeg"
+import ReactGA from "react-ga";
 
 export default function About(props) {
+    ReactGA.pageview("/about");
+
     return <div>
         <h1 style={{textAlign: "center", marginBottom: "40px"}}> About</h1>
         <img src={image} width="50%" 

@@ -24,7 +24,7 @@ export default class Home extends React.Component {
 
     render() {
         const header = {
-            title: "Welcome",
+            title: "Welkom",
             text: [
                 "Hi! Welkom bij Foodlose, een nieuwe website boordevol inspiratie voor een gezonde levensstijl.",
                 "Op zoek naar gezonde recepten ? Dan ben je aan het juiste adres!  Geen keukenprinses, geen probleem!",

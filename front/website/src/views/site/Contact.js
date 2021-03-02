@@ -1,7 +1,10 @@
 import React from "react";
 import './Contact.css'
+import ReactGA from "react-ga";
 
 export default function Contact(props) {
+    ReactGA.pageview("/contact");
+
     return <div>
          <h1 style={{ textAlign: "center", marginBottom: "40px" }}> Contact</h1>
 

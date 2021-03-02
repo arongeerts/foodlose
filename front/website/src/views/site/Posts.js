@@ -19,10 +19,7 @@ export default class Posts extends React.Component {
     componentDidMount() {
         client.getPostDetails(this.props.match.params.postid)
             .then(data => this.setState({...this.state, loading: false, post_info: data}))
-            .then(() => ReactGA.event({
-                action: 'Get Recipe',
-                category: this.state.post_info.name
-            }))
+            .then(data => {ReactGA.pageview("/" + this.state.post_info.name)})
             .catch(err => console.log(err))
     }
 

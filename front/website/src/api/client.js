@@ -78,13 +78,6 @@ export class Client {
     }
 
     async getPosts(offset, category) {
-        if (category) {
-            ReactGA.event({
-                action: 'List Recipes',
-                category: category
-            });
-        }
-
         return http.get(config.url + '/post?last_post_id=' + offset).then(items => category ? items.filter(item => item.tags.includes(category)) : items);
     }
 

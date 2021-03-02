@@ -2,6 +2,7 @@ import React from 'react';
 
 import Gallery from '../../components/Gallery/Gallery';
 import PageHeader from '../../components/PageHeader/PageHeader';
+import ReactGA from "react-ga";
 
 const titles = {
     drinks: {
@@ -41,6 +42,7 @@ export default function Recipes(props) {
     var title = "Recepten"
     var text = []
     if (category) {
+        ReactGA.pageview("/categories/" + titles[category].title)
         title = titles[category].title
         text = titles[category].text
     }

@@ -58,7 +58,6 @@ const App = () => {
         maxWidth: 400,
         margin: 10
       }}
-      debug
     >
       Mogen wij jouw cookies in ruil voor de onze? Op basis van jouw gebruik kunnen wij, volledig anoniem, jouw gebruik in kaart brengen om onze website beter te maken.
     </CookieConsent>

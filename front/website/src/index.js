@@ -15,34 +15,57 @@ import * as serviceWorker from './serviceWorker';
 import { Route, Redirect, HashRouter as Router } from 'react-router-dom'
 import 'bootstrap/dist/css/bootstrap.min.css';
 import ReactGA from "react-ga";
+import CookieConsent, { Cookies } from "react-cookie-consent";
 
-ReactGA.initialize("UA-190755162-2");
-ReactGA.pageview(window.location.pathname + window.location.search);
+const acceptCookies = () => {
+  ReactGA.initialize("UA-190755162-2");
+  ReactGA.pageview(window.location.pathname + window.location.search);
+}
 
 updateLoginState()
 
-ReactDOM.render(
-  <React.StrictMode>
-    <Router>
-      <Route exact path="/" render={(props) => <Home/>} />
-      <Route path="/about" render={(props) => <div><Header ><About /></Header ></div>} />
-      <Route path="/posts/:postid" render={(props) => <Header><Posts {...props} /></Header>} />
-      <Route exact path="/recipes" render={(props) => <Header><Recipes {...props} /></Header>} />
-      <Route path="/recipes/:category" render={(props) => <Header><Recipes {...props} /></Header>} />
-      <Route path="/contact" render={(props) => <div><Header><Contact/></Header></div>} />
-      <Route exact path="/dashboard" render={(props) => {
-          return (loginState.loggedIn ?  
-            (loginState.role == "ADMIN" ?
-              <Redirect to="/admin/dashboard" /> : 
-              <Redirect to="/user/dashboard" />) : 
-            <Redirect to="/login" />)
-      }}/>
-      <Route path="/login" component={LoginView} />
-      <Route path="/admin/dashboard" component={AdminDashboard} />
-      <Route path="/user/dashboard" component={UserDashboard} />
+const App = () => {
+  return <>
+    <React.StrictMode>
+      <Router>
+        <Route exact path="/" render={(props) => <Home/>} />
+        <Route path="/about" render={(props) => <div><Header ><About /></Header ></div>} />
+        <Route path="/posts/:postid" render={(props) => <Header><Posts {...props} /></Header>} />
+        <Route exact path="/recipes" render={(props) => <Header><Recipes {...props} /></Header>} />
+        <Route path="/recipes/:category" render={(props) => <Header><Recipes {...props} /></Header>} />
+        <Route path="/contact" render={(props) => <div><Header><Contact/></Header></div>} />
+        <Route exact path="/dashboard" render={(props) => {
+            return (loginState.loggedIn ?  
+              (loginState.role == "ADMIN" ?
+                <Redirect to="/admin/dashboard" /> : 
+                <Redirect to="/user/dashboard" />) : 
+              <Redirect to="/login" />)
+        }}/>
+        <Route path="/login" component={LoginView} />
+        <Route path="/admin/dashboard" component={AdminDashboard} />
+        <Route path="/user/dashboard" component={UserDashboard} />
+      </Router>
+    </React.StrictMode>
+    <CookieConsent
+      location="bottom"
+      buttonText="OK"
+      onAccept={acceptCookies}
+      buttonStyle={{ backgroundColor: "#000000", color: "#ffffff" }}
+      style={{ 
+        backgroundColor: "#ffffff", 
+        color: "#000000", 
+        border: "1px solid black",
+        maxWidth: 400,
+        margin: 10
+      }}
+    >
+      Mogen wij jouw cookies in ruil voor de onze? Op basis van jouw gebruik kunnen wij, volledig anoniem, jouw gebruik in kaart brengen om onze website beter te maken.
+    </CookieConsent>
+  </>
+}
 
-  </Router>
-  </React.StrictMode>,
+ReactDOM.render(
+  <App />,
   document.getElementById('root')
 );
 
